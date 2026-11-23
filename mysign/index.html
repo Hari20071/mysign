@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mysign - Create your signature</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Dancing+Script:wght@600&family=Satisfy&family=Pacifico&family=Allura&family=Mr+Dafoe&family=Homemade+Apple&family=Sacramento&family=Kristi&family=Yellowtail&family=Marck+Script&family=La+Belle+Aurore&family=Zeyada&family=Alex+Brush&family=Herr+Von+Muellerhoff&family=Mrs+Saint+Delafield&family=Rochester&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f3ec;--card:#fff;--ink:#1b1b2f;--muted:#6b6b7b;--accent:#3b4cca;--line:#e3ded1}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{text-align:center;padding:40px 16px 16px}
+.logo{font-family:"Great Vibes",cursive;font-size:3.4rem;color:var(--accent);margin:0}
+header p{margin:6px 0 0;color:var(--muted)}
+.box{max-width:620px;margin:20px auto;padding:0 16px;display:flex;gap:10px;flex-wrap:wrap}
+.box input{flex:1;min-width:200px;padding:14px 16px;font-size:1.05rem;border:2px solid var(--line);border-radius:10px;outline:none}
+.box input:focus{border-color:var(--accent)}
+button{cursor:pointer;border:0;border-radius:10px;font-size:1rem;padding:14px 20px;background:var(--accent);color:#fff;font-weight:600}
+button.alt{background:#fff;color:var(--accent);border:2px solid var(--accent)}
+button:hover{opacity:.9}
+main{max-width:1000px;margin:0 auto;padding:10px 16px 40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.sig{min-height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;
+  background:repeating-linear-gradient(transparent,transparent 31px,#eef0f6 32px);border-radius:8px;padding:8px}
+.sig span{white-space:nowrap;line-height:1.2;display:inline-block}
+.sig svg{width:70%;height:22px;margin-top:-4px}
+.meta{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--muted)}
+.meta button{padding:8px 12px;font-size:.85rem}
+.more{text-align:center;margin:24px 0}
+.hint{text-align:center;color:var(--muted);padding:30px 0}
+.tips{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin-top:20px}
+.tips h2{margin-top:0;font-size:1.2rem}
+.tips li{margin:8px 0;line-height:1.5}
+footer{text-align:center;color:var(--muted);padding:20px;font-size:.85rem}
+</style>
+</head>
+<body>
+<header>
+  <h1 class="logo">mysign</h1>
+  <p>Type your name and get beautiful signature ideas in seconds.</p>
+</header>
+
+<div class="box">
+  <input id="name" type="text" placeholder="Enter your name (e.g. Harihara Sudharsan)" maxlength="40" autocomplete="off">
+  <button id="go">Create my signs</button>
+</div>
+
+<main>
+  <div id="grid" class="grid"></div>
+  <div id="hint" class="hint">Your signatures will appear here.</div>
+  <div class="more" id="moreWrap" hidden><button class="alt" id="more">+ Create 5 more</button></div>
+
+  <section class="tips">
+    <h2>How to make a good signature</h2>
+    <ol>
+      <li><b>Keep it simple.</b> Use your name or initials with 2-3 clear strokes. Complex signs are hard to repeat.</li>
+      <li><b>Practise on paper.</b> Write your chosen sign 20-30 times until your hand does it smoothly.</li>
+      <li><b>Make it repeatable.</b> A signature must look almost the same every time, especially for bank and legal documents.</li>
+      <li><b>Slight slant and an underline</b> give a confident look. Do not make it too big or too tiny.</li>
+      <li><b>Use a smooth pen</b> (gel or ball pen) and sign without lifting the pen too often.</li>
+    </ol>
+  </section>
+</main>
+<footer>mysign &copy; 2026</footer>
+
+<script>
+const FONTS=["Great Vibes","Dancing Script","Satisfy","Pacifico","Allura","Mr Dafoe","Homemade Apple","Sacramento","Kristi","Yellowtail","Marck Script","La Belle Aurore","Zeyada","Alex Brush","Herr Von Muellerhoff","Mrs Saint Delafield","Rochester"];
+const COLORS=["#0b1f6b","#111111","#1d3fbf","#22324d","#4a1d6b","#0a5a4a"];
+const FLOURISH=[
+ "M5 20 C40 5, 80 28, 120 14 S180 10, 195 18",
+ "M5 15 Q50 28 100 12 T195 14",
+ "M5 22 C60 22 120 8 195 6",
+ "M10 18 C30 2, 50 30, 80 16 C110 2, 140 28, 190 10"
+];
+const grid=document.getElementById("grid"),hint=document.getElementById("hint"),
+      moreWrap=document.getElementById("moreWrap"),input=document.getElementById("name");
+let usedFonts=[],count=0;
+
+const rand=a=>a[Math.floor(Math.random()*a.length)];
+const rnd=(a,b)=>a+Math.random()*(b-a);
+
+function variants(name){
+  const p=name.trim().split(/\s+/),first=p[0],last=p.length>1?p[p.length-1]:"";
+  const ini=p.map(x=>x[0].toUpperCase()).join(".")+".";
+  const cap=s=>s?s[0].toUpperCase()+s.slice(1):s;
+  return [
+    p.map(cap).join(" "),
+    last?cap(first)[0]+". "+cap(last):cap(first),
+    last?cap(first)+" "+last[0].toUpperCase()+".":cap(first),
+    ini,
+    cap(first)
+  ];
+}
+
+function makeConfig(name,i){
+  const v=variants(name);
+  let font;
+  do{font=rand(FONTS)}while(usedFonts.includes(font)&&usedFonts.length<FONTS.length);
+  usedFonts.push(font);
+  if(usedFonts.length>=FONTS.length)usedFonts=[];
+  return{text:v[i%5],font,size:Math.round(rnd(40,58)),rot:+rnd(-7,2).toFixed(1),
+         color:rand(COLORS),fl:Math.floor(Math.random()*FLOURISH.length),underline:Math.random()>0.2};
+}
+
+function addCard(c){
+  count++;
+  const card=document.createElement("div");card.className="card";
+  card.innerHTML=`<div class="sig">
+    <span style="font-family:'${c.font}',cursive;font-size:${c.size}px;color:${c.color};transform:rotate(${c.rot}deg)"></span>
+    ${c.underline?`<svg viewBox="0 0 200 30" preserveAspectRatio="none"><path d="${FLOURISH[c.fl]}" fill="none" stroke="${c.color}" stroke-width="2.2" stroke-linecap="round"/></svg>`:""}
+  </div>
+  <div class="meta"><span>Style #${count} - ${c.font}</span><button>Download PNG</button></div>`;
+  card.querySelector("span").textContent=c.text;
+  card.querySelector("button").onclick=()=>download(c);
+  grid.appendChild(card);
+}
+
+function generate(reset){
+  const name=input.value.trim();
+  if(!name){input.focus();input.style.borderColor="#d33";return}
+  input.style.borderColor="";
+  if(reset){grid.innerHTML="";count=0;usedFonts=[]}
+  for(let i=0;i<5;i++)addCard(makeConfig(name,i));
+  hint.hidden=true;moreWrap.hidden=false;
+}
+
+async function download(c){
+  try{await document.fonts.load(`100px "${c.font}"`,c.text)}catch(e){}
+  const W=900,H=360,cv=document.createElement("canvas");cv.width=W;cv.height=H;
+  const x=cv.getContext("2d");
+  x.font=`120px "${c.font}", cursive`;
+  const w=x.measureText(c.text).width,fs=Math.min(120,120*760/w);
+  x.font=`${fs}px "${c.font}", cursive`;
+  const tw=x.measureText(c.text).width;
+  x.fillStyle=c.color;x.textAlign="center";x.textBaseline="alphabetic";
+  x.save();x.translate(W/2,200);x.rotate(c.rot*Math.PI/180);x.fillText(c.text,0,0);x.restore();
+  if(c.underline){
+    x.save();x.translate((W-tw)/2,215);x.scale(tw/200,2.2);
+    x.strokeStyle=c.color;x.lineWidth=2.2/2.2*1.4;x.lineCap="round";
+    x.stroke(new Path2D(FLOURISH[c.fl]));x.restore();
+  }
+  const a=document.createElement("a");
+  a.download="mysign-"+c.text.replace(/\W+/g,"_")+".png";
+  a.href=cv.toDataURL("image/png");a.click();
+}
+
+document.getElementById("go").onclick=()=>generate(true);
+document.getElementById("more").onclick=()=>generate(false);
+input.addEventListener("keydown",e=>{if(e.key==="Enter")generate(true)});
+</script>
+</body>
+</html>
